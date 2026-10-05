@@ -40,6 +40,13 @@ int speedLeft = 0;
 int speedRight = 0;
 int speedControl = 1; //Controls power of the motors
 
+// ==== PID Controller Variables ==== //
+double FF=0.0,FFA=0.0001,Kp=0.00012629420,Ki=0.05,Kd=0,IMax=0.1;
+double integral = 0.0;
+double previous_error = 0.0,previous_setpoint = 0.0;
+double dT = 0.02; // Assuming a fixed time step of 10ms for simplicity
+
+
 
 task main(){
 
@@ -74,6 +81,7 @@ void searchBall(){
 		ballFound = 0;
 	}
 }
+
 
 //Checks if the ball is in the storage box
 void checkStorage(){
@@ -234,4 +242,37 @@ void rotation(const char* direction){
 		}
 	motor[leftMotor] = speedLeft;
 	motor[rightMotor] = speedRight;
+}
+
+//PID Control
+float pidControl(float setpoint, float measured_value) {
+	// Calculate error
+	float error = setpoint - measured_value;
+	double changeSetpoint = (setpoint - previous_setpoint) / dT;
+
+	// Proportional term
+	float Pout = Kp * error;
+	
+	// Integral term
+	integral += error;
+	if (integral > IMax){
+		integral = IMax;
+	}
+	else if (integral<-IMax){
+		integral=-IMax;
+	}
+	float Iout = Ki * integral;
+	
+	// Derivative term
+	float derivative = (error - previous_error)/dT;
+	float Dout = Kd * derivative;
+	
+	// Calculate total output
+	float output = Pout + Iout + Dout+FF*setpoint+FFA*changeSetpoint;
+	
+	// Save setpoint and error for next iteration
+	previous_setpoint = setpoint;
+	previous_error = error;
+	
+	return output;
 }
