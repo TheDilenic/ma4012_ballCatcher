@@ -174,48 +174,37 @@ void depositBoxDetection(){
 
 //Encoder Raw to Metric Conversion
 float get_encoder_distance_cm(int raw_vex_encoder) {
-	// Prevent divide-by-zero or negative results in case of stray low noise
-	if (raw_vex_encoder <= 0) {
-		return 0.0; // Out of range
-	}
-
-	// Assuming a specific conversion factor for the encoder
-	float distance_cm = raw_vex_encoder * 0.1; // Example conversion factor
-
-	return distance_cm;
+    float WHEEL_DIAMETER = 4.0; 
+    long ticks = SensorValue[shaftEncoder];
+    
+    // (Ticks / 360) * PI * Diameter
+    return ((float)ticks / 360.0) * 3.14159 * WHEEL_DIAMETER;
+}
 }
 
 //Line Sensor Analog to Metric Conversion
 float get_line_distance_cm(int raw_vex_adc) {
-	// Prevent divide-by-zero or negative results in case of stray low noise
-	if (raw_vex_adc <= 100) {
-		return 80.0; // Out of range
-	}
-
-	// 110000 / (ADC - 15) is calibrated specifically for 12-bit scaling
-	float distance_cm = 110000.0 / (raw_vex_adc - 15.0);
-
-	if (distance_cm < 10.0) distance_cm = 10.0;
-	if (distance_cm > 80.0) distance_cm = 80.0;
-
-	return distance_cm;
+    // Standard calibration midpoint (adjust this based on your field tests)
+    int threshold = 1800; 
+    
+    if (SensorValue[lineTracker] > threshold) {
+        return true;
+    }
+    return false;
 }
 
 
 //Sharp Sensor Analogue to Metric Conversion
 float get_sharp_distance_cm(int raw_vex_adc) {
-    // Prevent divide-by-zero or negative results in case of stray low noise
-    if (raw_vex_adc <= 100) {
-        return 80.0; // Out of range
+    int raw = SensorValue[sharpIR];
+    
+    // Guard against divide-by-zero or extreme near-field reading anomalies
+    if (raw < 250) {
+        return 80.0; // Max rated distance
     }
-
-    // 110000 / (ADC - 15) is calibrated specifically for 12-bit scaling
-    float distance_cm = 110000.0 / (raw_vex_adc - 15.0);
-
-    if (distance_cm < 10.0) distance_cm = 10.0;
-    if (distance_cm > 80.0) distance_cm = 80.0;
-
-    return distance_cm;
+    
+    // ROBOTC power regression mapping for 5V VEX Cortex analog ports
+    return (27100.0 / raw) - 1.2;
 }
 
 //Movement controls
