@@ -1,3 +1,13 @@
+Based on these documents, help me write a program for the robot, the workflow and what the robot is supposed to do is included in ma4012_robotWorkFlow.jpg
+
+other necessary features and solution may be contained within the pdf file
+
+there are 2 readily sample code that's in its early stages Main_Program1.c and main_ma4012.c, all sensor needed for the robot are alreadly noted by the imports here
+
+any variables that are needed but not given like wheel diameter or robot size or sensor placement, do put it as a variable that can be easily edited later,
+
+in short, the robot must find and detect 3 tennis balls in a race against 1 other robot to be the fastest to deposit as much balls as possible into a box all inside a fixed rectangluar arena
+----
 I’ll first inspect the two starter programs, repository files, and the report’s relevant requirements; 
 then I’ll build the control loop around the actual sensor/motor APIs the project uses.
 
@@ -30,3 +40,16 @@ are normally-open touch switches.
 
 The program passed a C syntax parse and structural checks, but I couldn’t verify it with a ROBOTC compiler 
 or on the hardware. The existing untracked `main_test.c` was left untouched.
+
+
+
+
+
+
+
+
+====================================================
+
+Added workflow-oriented, student-friendly comments throughout main_ma4012.c. They explain how the code follows the diagram—from finding and approaching a ball, through obstacle avoidance and pickup checks, to navigating to the box, releasing the ball, and repeating—as well as the main calibration settings and sensor checks.
+
+No robot behavior was intentionally changed. The source still passes the syntax and formatting checks.
