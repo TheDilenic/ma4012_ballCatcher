@@ -7,7 +7,7 @@ there are 2 readily sample code that's in its early stages Main_Program1.c and m
 any variables that are needed but not given like wheel diameter or robot size or sensor placement, do put it as a variable that can be easily edited later,
 
 in short, the robot must find and detect 3 tennis balls in a race against 1 other robot to be the fastest to deposit as much balls as possible into a box all inside a fixed rectangluar arena
-----
+-----
 I’ll first inspect the two starter programs, repository files, and the report’s relevant requirements; 
 then I’ll build the control loop around the actual sensor/motor APIs the project uses.
 
@@ -50,6 +50,12 @@ or on the hardware. The existing untracked `main_test.c` was left untouched.
 
 ====================================================
 
-Added workflow-oriented, student-friendly comments throughout main_ma4012.c. They explain how the code follows the diagram—from finding and approaching a ball, through obstacle avoidance and pickup checks, to navigating to the box, releasing the ball, and repeating—as well as the main calibration settings and sensor checks.
+add comments so that it fits the given workflow and allows the average student to understand it
+-----
+
+Added workflow-oriented, student-friendly comments throughout main_ma4012.c. 
+They explain how the code follows the diagram—from finding and approaching a ball, 
+through obstacle avoidance and pickup checks, to navigating to the box, releasing the ball, 
+and repeating—as well as the main calibration settings and sensor checks.
 
 No robot behavior was intentionally changed. The source still passes the syntax and formatting checks.
