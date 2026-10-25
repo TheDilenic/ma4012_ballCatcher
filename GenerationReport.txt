@@ -1,0 +1,32 @@
+I’ll first inspect the two starter programs, repository files, and the report’s relevant requirements; 
+then I’ll build the control loop around the actual sensor/motor APIs the project uses.
+
+
+The starter code’s main gaps are unbounded movement loops, no real deposit/navigation logic, 
+and sensor pins declared as `sensorNone` despite being used as switches. 
+I’m replacing the starter control loop with a bounded encoder-based search/pickup/deposit cycle 
+and making arena geometry, sensor thresholds, and wheel calibration editable at the top of the program.
+
+
+The control loop now uses the rear limit switches as well as the line sensors, 
+and I caught/fixed a pickup-distance check that otherwise would have relied only on its timeout. 
+I’m checking the final code structure and the README/configuration consistency now; this workspace 
+doesn’t expose a ROBOTC compiler, so hardware-specific validation will still need a robot run.
+
+
+The program waits for the start button, searches with a left/right scan, 
+steers toward a detected ball while running the intake, checks whether it was collected, 
+navigates to the configured box approach point, and verifies release. 
+It repeats for up to three balls. Encoder-based movement has timeouts; line sensors, rear limit switches, 
+and the opponent sensor are used while moving.
+
+**Before running it on the robot:** 
+the arena size, robot dimensions, wheel measurements, encoder calibration, starting pose, 
+and box approach coordinates are example values—not measurements from your setup. 
+Update them, and calibrate the sensor thresholds and motor directions. 
+The supplied sensors don’t include a box range sensor, so box navigation relies on encoder odometry 
+and a known starting pose. The switch configuration also assumes the rear limits and emergency stop 
+are normally-open touch switches.
+
+The program passed a C syntax parse and structural checks, but I couldn’t verify it with a ROBOTC compiler 
+or on the hardware. The existing untracked `main_test.c` was left untouched.
