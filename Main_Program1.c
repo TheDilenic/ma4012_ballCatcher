@@ -35,7 +35,6 @@ float speedLeft = 0;
 float speedRight = 0;
 float speedControl = 1; //Controls power of the motors
 int ballFound = 0;
-int ballCaught = 0;
 int begin = 0;
 
 
@@ -53,7 +52,7 @@ task main(){
 		movement("stop");
 		while(cycle == 0)
 			{
-				if(SensorValue(backTrackLeft) <= 150 && SensorValue(backTrackRight) <= 150 && ballCaught == 0)
+				if(SensorValue(backTrackLeft) <= 150 && SensorValue(backTrackRight) <= 150)
 				{
 					movement("forward");
 					delay(500);
@@ -67,14 +66,14 @@ task main(){
 				}
 				else if(SensorValue(frontTrackLeft) <= 150)
 				{
-					movement("backward");
+					movement("back");
 					delay(500);
 					rotation("clockwise");
 					delay(400);
 				}
-				else if(SensorValue(frontTrackRight) <= 350)
+				else if(SensorValue(frontTrackRight) <= 150)
 				{
-					movement("backward");
+					movement("back");
 					delay(500);
 					rotation("anticlockwise");
 					delay(4000);
@@ -88,7 +87,7 @@ task main(){
 				}
 				else if(SensorValue(frontTrackLeft) <= 150 && SensorValue(frontTrackRight) <= 350)
 				{
-					movement("backward");
+					movement("back");
 					delay(500);
 					rotation("clockwise");
 					delay(1600);
@@ -147,8 +146,8 @@ void checkBall(){
 		motor[catchSpinner] = 0;
 		motor[leftMotor] = 0;
 		motor[rightMotor] = 0;
-		ballFound = 0;
 		speedControl = 1;
+		ballFound = 2;
 	}
 }
 
@@ -158,67 +157,61 @@ void deliverBall(){
 	if(SensorValue(North) == 0){
 		movement("back");
 		delay(2500);
-		ballCaught = 1;
 	}
 	else if(SensorValue(West) == 0){
 		rotation("anticlockwise");
 		delay(800);
 		movement("back");
 		delay(2500);
-		ballCaught = 1;
 	}
 	else if(SensorValue(East) == 0){
 		rotation("clockwise");
 		delay(800);
 		movement("back");
 		delay(2250);
-		ballCaught = 1;
 	}
 	else if(SensorValue(South) == 0){
 		rotation("clockwise");
 		delay(1600);
 		movement("back");
 		delay(2250);
-		ballCaught = 1;
 	}
 	else if(SensorValue(North) == 0 && SensorValue(East) == 0){
 		rotation("clockwise");
 		delay(400);
 		movement("back");
 		delay(2250);
-		ballCaught = 1;
 	}
 	else if(SensorValue(North) == 0 && SensorValue(West) == 0){
 		rotation("anticlockwise");
 		delay(400);
 		movement("back");
 		delay(2250);
-		ballCaught = 1;
 	}
 	else if(SensorValue(South) == 0 && SensorValue(East) == 0){
 		rotation("clockwise");
 		delay(400);
 		movement("back");
 		delay(2250);
-		ballCaught = 1;
 	}
 	else if(SensorValue(South) == 0 && SensorValue(West) == 0){
 		rotation("anticlockwise");
 		delay(400);
 		movement("back");
 		delay(2250);
-		ballCaught = 1;
 	}
 }
 
 //Release Mechanism and Movement
 void releaseBall(){
-	if (ballCaught == 1){
-
-		motor[releaseSpinner] = 127;
-		delay(400);
-		motor[releaseSpinner] = 0;
-		ballCaught = 0;
+	if (SensorValue(backLimitLeft) == 1 && SensorValue(backLimitRight) == 1 && SensorValue(storageCheck) >= 2000){
+		motor[rightMotor] = 0;
+		motor[leftMotor] = 0;
+		motor[releaseSpinner] = 60;
+		delay(300);
+		motor[releaseSpinner] = -60;
+		delay(300);
+		ballFound = 0;
 		cycle = 1;
 
 	}
