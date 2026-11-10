@@ -38,9 +38,11 @@ float speedControl = 1; //Controls power of the motors
 int ballFound = 0;
 int begin = 0;
 int boundaryLevel = 250;
+int stage = 0;
 
 //Boundary Tracking
 void checkBoundary(){
+	int temp = stage;
 	if(SensorValue(backTrackLeft) <= boundaryLevel && SensorValue(backTrackRight) <= boundaryLevel)
 	{
 		movement("forward");
@@ -81,6 +83,7 @@ void checkBoundary(){
 		rotation("clockwise");
 		delay(1600);
 	}
+	stage = temp;
 }
 
 //Movement controls
@@ -133,11 +136,15 @@ void searchBall(){
 	if (SensorValue(detectBallLeft) >= 1000){
 		movement("stop");
 		delay(1000);
+		rotation("anticlockwise");
+		delay(250);
 		ballFound = 1;
 	}
 	else if (SensorValue(detectBallRight) >= 1000){
 		movement("stop");
 		delay(1000);
+		rotation("clockwise");
+		delay(250);
 		ballFound = 1;
 	}
 	else if (SensorValue(detectBallLeft) >= 2000 && SensorValue(detectBallRight) >= 2000 || SensorValue(opponentCheck) >= 3000){
@@ -156,7 +163,7 @@ void searchBall(){
 //Catching Mechanism and Movement
 void catchBall(){
 		while(ballFound == 1){
-		speedControl = 0.5;
+		speedControl = 0.3;
 		motor[catchSpinner] = -127;
 		movement("forward");
 		checkBall();
@@ -220,11 +227,25 @@ task main(){
 		movement("stop");
 		while(cycle == 0)
 			{
-			searchBall();
-			catchBall();
-			deliverBall();
-			releaseBall();
+			if (stage == 0){
+				searchBall();
+				stage = 1;
 			}
-		}
+			else if (stage == 1){
+				catchBall();
+				stage = 2;
+			}
+			else if (stage == 2){
+				deliverBall();
+				stage = 3;
+			}
+			else if (stage == 3){
+				movement("forward");
+				delay(2250);
+				movement("stop");
+				stage = 0;
+			}
+
+	}}
 	}
 }
