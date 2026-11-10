@@ -29,6 +29,7 @@ void checkBall();
 void deliverBall();
 void releaseBall();
 void checkBoundary();
+int boundaryMask();
 
 // ==== Variable Setup ==== //
 int cycle = 0;
@@ -86,9 +87,28 @@ void checkBoundary(){
 	stage = temp;
 }
 
+int boundaryMask()
+{
+	int mask = 0;
+
+	if (lineSensorActive(SensorValue[frontTrackLeft]))
+		mask |= 1;
+	if (lineSensorActive(SensorValue[frontTrackRight]))
+		mask |= 2;
+	if (lineSensorActive(SensorValue[backTrackLeft]))
+		mask |= 4;
+	if (lineSensorActive(SensorValue[backTrackRight]))
+		mask |= 8;
+	if (SensorValue[backLimitLeft] == 1)
+		mask |= 4;
+	if (SensorValue[backLimitRight] == 1)
+		mask |= 8;
+	return mask;
+}
+
 //Movement controls
-void movement(const char* direction){
-	//checkBoundary();
+void movement(const char* direction, int durationMs){
+	int elapsedMs = 0;
 	if (strcmp(direction, "forward") == 0){
 		speedLeft = 127*speedControl;
 		speedRight = 127*speedControl;
@@ -109,8 +129,21 @@ void movement(const char* direction){
 		speedLeft = speedRight = 0;
 	}
 
-	motor[leftMotor] = speedLeft;
-	motor[rightMotor] = speedRight;
+
+	while (elapsedMs < durationMs)
+	{
+		waitForEmergencyRelease();
+		if (strcmp(direction, "forward") == 0 && (boundaryMask() & 3) != 0)
+			break;
+
+		motor[leftMotor] = speedLeft;
+		motor[rightMotor] = speedRight;
+		wait1Msec(20);
+		elapsedMs += 20;
+	}
+	movement("stop");
+
+
 }
 
 //Rotation Controls
