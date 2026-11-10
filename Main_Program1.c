@@ -177,38 +177,18 @@ void checkBall(){
 
 //Deposit Box Alignment and Detection
 void deliverBall(){
-	if(SensorValue(North) == 0 && SensorValue(East) == 0){
-		rotation("clockwise");
-		delay(400);
-	}
-	else if(SensorValue(North) == 0 && SensorValue(West) == 0){
-		rotation("anticlockwise");
-		delay(400);
-	}
-	else if(SensorValue(South) == 0 && SensorValue(East) == 0){
-		rotation("clockwise");
-		delay(400);
-	}
-	else if(SensorValue(South) == 0 && SensorValue(West) == 0){
-		rotation("anticlockwise");
-		delay(400);
-	}
-	else if(SensorValue(North) == 0){
-		movement("back");
-	}
-	else if(SensorValue(West) == 0){
-		rotation("anticlockwise");
-		delay(800);
-	}
-	else if(SensorValue(East) == 0){
-		rotation("clockwise");
-		delay(800);
-	}
-	else if(SensorValue(South) == 0){
-		rotation("clockwise");
-		delay(1600);
-	}
+	// 0 means the robot is facing that direction, 1 means the robot is not facing that direction
+	int checkSouth = SensorValue(North) == 1 && SensorValue(East) == 1 && SensorValue(West) == 1;
 
+	while(checkSouth == 0){
+		rotation("clockwise");
+		if(checkSouth == 1){
+			movement("back");
+			delay(1000);
+			movement("stop");
+			break;
+		}
+	}
 }
 
 //Release Mechanism and Movement
