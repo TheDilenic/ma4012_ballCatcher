@@ -28,6 +28,7 @@ void catchBall();
 void checkBall();
 void deliverBall();
 void releaseBall();
+void checkBoundary();
 
 // ==== Variable Setup ==== //
 int cycle = 0;
@@ -36,85 +37,107 @@ float speedRight = 0;
 float speedControl = 1; //Controls power of the motors
 int ballFound = 0;
 int begin = 0;
+int boundaryLevel = 250;
 
-
-task main(){
-	while(1==1)
+//Boundary Tracking
+void checkBoundary(){
+	if(SensorValue(backTrackLeft) <= boundaryLevel && SensorValue(backTrackRight) <= boundaryLevel)
 	{
-	if(SensorValue(buttonStart) == 1)
-   	{
-     begin = 1;
-  	}
-	if (begin == 1)
-		{
 		movement("forward");
-		delay(2250);
-		movement("stop");
-		while(cycle == 0)
-			{
-				if(SensorValue(backTrackLeft) <= 150 && SensorValue(backTrackRight) <= 150)
-				{
-					movement("forward");
-					delay(500);
-				}
-				else if(SensorValue(backTrackRight) <= 150)
-				{
-					movement("forward");
-					delay(500);
-					rotation("clockwise");
-					delay(400);
-				}
-				else if(SensorValue(frontTrackLeft) <= 150)
-				{
-					movement("back");
-					delay(500);
-					rotation("clockwise");
-					delay(400);
-				}
-				else if(SensorValue(frontTrackRight) <= 150)
-				{
-					movement("back");
-					delay(500);
-					rotation("anticlockwise");
-					delay(4000);
-				}
-				else if(SensorValue(backTrackLeft) <= 150)
-				{
-					movement("forward");
-					delay(500);
-					rotation("anticlockwise");
-					delay(400);
-				}
-				else if(SensorValue(frontTrackLeft) <= 150 && SensorValue(frontTrackRight) <= 350)
-				{
-					movement("back");
-					delay(500);
-					rotation("clockwise");
-					delay(1600);
-				}
-				else
-				{
-					searchBall();
-					catchBall();
-					deliverBall();
-					releaseBall();
-				}
-			}
-		}
+		delay(500);
 	}
+	else if(SensorValue(backTrackRight) <= boundaryLevel)
+	{
+		movement("forward");
+		delay(500);
+		rotation("clockwise");
+		delay(400);
+	}
+	else if(SensorValue(frontTrackLeft) <= boundaryLevel	)
+	{
+		movement("back");
+		delay(500);
+		rotation("clockwise");
+		delay(400);
+	}
+	else if(SensorValue(frontTrackRight) <= boundaryLevel)
+	{
+		movement("back");
+		delay(500);
+		rotation("anticlockwise");
+		delay(4000);
+	}
+	else if(SensorValue(backTrackLeft) <= boundaryLevel)
+	{
+		movement("forward");
+		delay(500);
+		rotation("anticlockwise");
+		delay(400);
+	}
+	else if(SensorValue(frontTrackLeft) <= boundaryLevel && SensorValue(frontTrackRight) <= boundaryLevel)
+	{
+		movement("back");
+		delay(500);
+		rotation("clockwise");
+		delay(1600);
+	}
+}
+
+//Movement controls
+void movement(const char* direction){
+	//checkBoundary();
+	if (strcmp(direction, "forward") == 0){
+		speedLeft = 127*speedControl;
+		speedRight = 127*speedControl;
+		}
+	else if (strcmp(direction, "back") == 0){
+		speedLeft = -127*speedControl;
+		speedRight = -127*speedControl;
+		}
+	else if (strcmp(direction, "left") == 0){
+		speedLeft = 60*speedControl;
+		speedRight = 127*speedControl;
+		}
+	else if (strcmp(direction, "right") == 0){
+		speedLeft = 127*speedControl;
+		speedRight = 60*speedControl;
+		}
+	else {
+		speedLeft = speedRight = 0;
+	}
+
+	motor[leftMotor] = speedLeft;
+	motor[rightMotor] = speedRight;
+}
+
+//Rotation Controls
+void rotation(const char* direction){
+	speedControl = 0.5;
+	//checkBoundary();
+	if (strcmp(direction, "clockwise") == 0){
+		speedLeft = 120*speedControl;
+		speedRight = -120*speedControl;
+		}
+	else if (strcmp(direction, "anticlockwise") == 0){
+		speedLeft = -120*speedControl;
+		speedRight = 120*speedControl;
+		}
+	motor[leftMotor] = speedLeft;
+	motor[rightMotor] = speedRight;
 }
 
 //Searches for the ball
 void searchBall(){
 	while (ballFound == 0){
+
 	if (SensorValue(detectBallLeft) >= 1000){
-		rotation("anticlockwise");
-		delay(400);
+		movement("stop");
+		delay(1000);
 		ballFound = 1;
 	}
 	else if (SensorValue(detectBallRight) >= 1000){
-		rotation("clockwise");
-		delay(400);
+		movement("stop");
+		delay(1000);
 		ballFound = 1;
 	}
 	else if (SensorValue(detectBallLeft) >= 2000 && SensorValue(detectBallRight) >= 2000 || SensorValue(opponentCheck) >= 3000){
@@ -154,57 +177,43 @@ void checkBall(){
 
 //Deposit Box Alignment and Detection
 void deliverBall(){
-	if(SensorValue(North) == 0){
-		movement("back");
-		delay(2500);
-	}
-	else if(SensorValue(West) == 0){
-		rotation("anticlockwise");
-		delay(800);
-		movement("back");
-		delay(2500);
-	}
-	else if(SensorValue(East) == 0){
-		rotation("clockwise");
-		delay(800);
-		movement("back");
-		delay(2250);
-	}
-	else if(SensorValue(South) == 0){
-		rotation("clockwise");
-		delay(1600);
-		movement("back");
-		delay(2250);
-	}
-	else if(SensorValue(North) == 0 && SensorValue(East) == 0){
+	if(SensorValue(North) == 0 && SensorValue(East) == 0){
 		rotation("clockwise");
 		delay(400);
-		movement("back");
-		delay(2250);
 	}
 	else if(SensorValue(North) == 0 && SensorValue(West) == 0){
 		rotation("anticlockwise");
 		delay(400);
-		movement("back");
-		delay(2250);
 	}
 	else if(SensorValue(South) == 0 && SensorValue(East) == 0){
 		rotation("clockwise");
 		delay(400);
-		movement("back");
-		delay(2250);
 	}
 	else if(SensorValue(South) == 0 && SensorValue(West) == 0){
 		rotation("anticlockwise");
 		delay(400);
-		movement("back");
-		delay(2250);
 	}
+	else if(SensorValue(North) == 0){
+		movement("back");
+	}
+	else if(SensorValue(West) == 0){
+		rotation("anticlockwise");
+		delay(800);
+	}
+	else if(SensorValue(East) == 0){
+		rotation("clockwise");
+		delay(800);
+	}
+	else if(SensorValue(South) == 0){
+		rotation("clockwise");
+		delay(1600);
+	}
+
 }
 
 //Release Mechanism and Movement
 void releaseBall(){
-	if (SensorValue(backLimitLeft) == 1 && SensorValue(backLimitRight) == 1 && SensorValue(storageCheck) >= 2000){
+	if (SensorValue(backLimitLeft) == 1 && SensorValue(backLimitRight) == 1){
 		motor[rightMotor] = 0;
 		motor[leftMotor] = 0;
 		motor[releaseSpinner] = 60;
@@ -217,43 +226,25 @@ void releaseBall(){
 	}
 }
 
-//Movement controls
-void movement(const char* direction){
-	if (strcmp(direction, "forward") == 0){
-		speedLeft = 127*speedControl;
-		speedRight = 127*speedControl;
+task main(){
+	while(1==1)
+	{
+	if(SensorValue(buttonStart) == 1)
+   	{
+     begin = 1;
+  	}
+	if (begin == 1)
+		{
+		movement("forward");
+		delay(2250);
+		movement("stop");
+		while(cycle == 0)
+			{
+			searchBall();
+			catchBall();
+			deliverBall();
+			releaseBall();
+			}
 		}
-	else if (strcmp(direction, "back") == 0){
-		speedLeft = -127*speedControl;
-		speedRight = -127*speedControl;
-		}
-	else if (strcmp(direction, "left") == 0){
-		speedLeft = 60*speedControl;
-		speedRight = 127*speedControl;
-		}
-	else if (strcmp(direction, "right") == 0){
-		speedLeft = 127*speedControl;
-		speedRight = 60*speedControl;
-		}
-	else {
-		speedLeft = speedRight = 0;
 	}
-
-	motor[leftMotor] = speedLeft;
-	motor[rightMotor] = speedRight;
-}
-
-//Rotation Controls
-void rotation(const char* direction){
-	speedControl = 0.5;
-	if (strcmp(direction, "clockwise") == 0){
-		speedLeft = 127*speedControl;
-		speedRight = -127*speedControl;
-		}
-	else if (strcmp(direction, "anticlockwise") == 0){
-		speedLeft = -127*speedControl;
-		speedRight = 127*speedControl;
-		}
-	motor[leftMotor] = speedLeft;
-	motor[rightMotor] = speedRight;
 }
