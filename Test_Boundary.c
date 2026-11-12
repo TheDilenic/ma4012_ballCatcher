@@ -28,7 +28,8 @@ void catchBall();
 void checkBall();
 void deliverBall();
 void releaseBall();
-void checkBoundary();
+//void checkBoundary();
+int boundaryMask();
 
 // ==== Variable Setup ==== //
 int cycle = 0;
@@ -38,6 +39,22 @@ float speedControl = 1; //Controls power of the motors
 int ballFound = 0;
 int begin = 0;
 int boundaryLevel = 250;
+
+
+int boundaryMask()
+{
+	int mask = 0;
+
+	if (SensorValue[frontTrackLeft] <= boundaryLevel)
+		mask |= 1;
+	if (SensorValue[frontTrackRight]<= boundaryLevel)
+		mask |= 2;
+	if (SensorValue[backTrackLeft] <= boundaryLevel)
+		mask |= 4;
+	if (SensorValue[backTrackRight] <= boundaryLevel)
+		mask |= 8;
+	return mask;
+}
 
 //Boundary Tracking
 // void checkBoundary(){
@@ -110,10 +127,7 @@ void movement(const char* direction, int durationMs){
 
 	while (elapsedMs < durationMs)
 	{
-		waitForEmergencyRelease();
 		if (strcmp(direction, "forward") == 0 && (boundaryMask() & 3) != 0)
-			break;
-		if (strcmp(direction, "back") == 0 && rearBoundaryDetected())
 			break;
 
 		motor[leftMotor] = speedLeft;
@@ -121,7 +135,8 @@ void movement(const char* direction, int durationMs){
 		wait1Msec(20);
 		elapsedMs += 20;
 	}
-	movement("stop");
+	motor[leftMotor] = 0;
+	motor[rightMotor] = 0;
 
 
 }
@@ -129,7 +144,7 @@ void movement(const char* direction, int durationMs){
 //Rotation Controls
 void rotation(const char* direction){
 	speedControl = 0.5;
-	checkBoundary();
+	//checkBoundary();
 	if (strcmp(direction, "clockwise") == 0){
 		speedLeft = 120*speedControl;
 		speedRight = -120*speedControl;
@@ -147,8 +162,8 @@ void rotation(const char* direction){
 task main(){
 	while(1==1)
 	{
-	movement("forward",3250);
-	movement("back",1000);
+	movement("forward",5250);
+	movement("back",2000);
 	//rotation("clockwise");
 
 	}
