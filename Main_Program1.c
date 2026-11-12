@@ -28,6 +28,7 @@ void catchBall();
 void checkBall();
 void deliverBall();
 void releaseBall();
+void checkBallConstant();
 
 // ==== Variable Setup ==== //
 int cycle = 0;
@@ -37,6 +38,7 @@ float speedControl = 1;
 int ballFound = 0;
 int begin = 0;
 int i = 0;
+int boundaryLevel = 250;
 
 task main(){
 	while(1==1)
@@ -51,9 +53,13 @@ task main(){
 			movement("stop",100);
 			while(cycle == 0)
 			{
+				if (ballFound <= 1){
 					searchBall();
 					catchBall();
+				}
+				else if (ballFound == 2){
 					deliverBall();
+				}
 			}
 		}
 		while (cycle == 1)
@@ -63,9 +69,13 @@ task main(){
 			cycle = 2;
 			while(cycle == 2)
 			{
+				if (ballFound <= 1){
 					searchBall();
 					catchBall();
+				}
+				else if (ballFound == 2){
 					deliverBall();
+				}
 			}
 		}
 	}
@@ -89,7 +99,9 @@ int boundaryMask()
 
 //Rotation Controls
 void rotation(const char* direction, int durationMs){
+	int elapsedMs = 0;
 	speedControl = 0.5;
+	checkBallConstant();
 	if (strcmp(direction, "clockwise") == 0){
 		speedLeft = 127*speedControl;
 		speedRight = -127*speedControl;
@@ -100,14 +112,12 @@ void rotation(const char* direction, int durationMs){
 		}
 	while (elapsedMs < durationMs)
 	{
-		if (strcmp(direction, "clockwise") == 0 && (boundaryMask() > 0) != 0)
-
+		if (strcmp(direction, "clockwise") == 0 && (boundaryMask() > 0) != 0 && (boundaryMask() < 4) != 0){
 			break;
-		if ((left >= 1000 && right >= 1000) || SensorValue(opponentCheck) >= 1400){
-
-       break;
+		}
+		if ((SensorValue(detectBallLeft) >= 1000 && SensorValue(detectBallRight) >= 1000) || SensorValue(opponentCheck) >= 1400){
+      		break;
         }
-
 
 		motor[leftMotor] = speedLeft;
 		motor[rightMotor] = speedRight;
@@ -124,6 +134,7 @@ void rotation(const char* direction, int durationMs){
 //Movement controls w/ Boundary Controls
 void movement(const char* direction, int durationMs){
 	int elapsedMs = 0;
+	checkBallConstant();
 	if (strcmp(direction, "forward") == 0){
 		speedLeft = 127*speedControl;
 		speedRight = 127*speedControl;
@@ -143,18 +154,19 @@ void movement(const char* direction, int durationMs){
 	else {
 		speedLeft = speedRight = 0;
 	}
-
+	
 
 	while (elapsedMs < durationMs)
 	{
-		if (strcmp(direction, "forward") == 0 && (boundaryMask() > 0) != 0)
+		if (strcmp(direction, "forward") == 0 && (boundaryMask() > 0) != 0 && (boundaryMask() < 4) != 0){
 			movement("back",200);
       		rotation("clockwise",500);
 			break;
-		if ((left >= 1000 && right >= 1000) || SensorValue(opponentCheck) >= 1400){
+	}
+		if ((SensorValue(detectBallLeft) >= 1000 && SensorValue(detectBallRight) >= 1000) || SensorValue(opponentCheck) >= 1400){
             movement("back",200);
             rotation("clockwise",500);
-       break;
+       		break;
         }
 
 
@@ -169,7 +181,7 @@ void movement(const char* direction, int durationMs){
 
 }
 
-//Mainprogram1.c
+
 //Searches for the ball
 void searchBall(){
     while (ballFound == 0){
@@ -177,28 +189,29 @@ void searchBall(){
         int right = SensorValue(detectBallRight);
         if (left >= 1000){
             movement("stop",100);
-            rotation("anticlockwise");
-            delay(250);
+            rotation("anticlockwise",250);
             ballFound = 1;
         }
         else if (right >= 1000){
             movement("stop",100);
-            rotation("clockwise");
-            delay(100);
+            rotation("clockwise",100);
             ballFound = 1;
         }
         else {
-            rotation("clockwise");
+            rotation("clockwise",100);
             for (int t = 0; t < 1000 && ballFound == 0; t += 20){
-                if (SensorValue(detectBallLeft) >= 1000 || SensorValue(detectBallRight) >= 1000 || SensorValue(opponentCheck) >= 1400) break;
-                delay(20);
+                if (SensorValue(detectBallLeft) >= 1000 || SensorValue(detectBallRight) >= 1000){
+              	delay(20);
+              	break;
+              	}
             }
-            if (SensorValue(detectBallLeft) < 1000 &&
-                SensorValue(detectBallRight) < 1000){
-                movement("forward");
+            if (SensorValue(detectBallLeft) < 1000 && SensorValue(detectBallRight) < 1000){
+                movement("forward",500);
                 for (int t = 0; t < 500; t += 20){
-                if (SensorValue(detectBallLeft) >= 1000 || SensorValue(detectBallRight) >= 1000 || SensorValue(opponentCheck) >= 1400) break;
-                 delay(20);
+                	if (SensorValue(detectBallLeft) >= 1000 || SensorValue(detectBallRight) >= 1000){
+                	delay(20);
+                	break;
+               		}
                 }
                 checkBall();
             }
@@ -208,13 +221,14 @@ void searchBall(){
 
 //Catching Mechanism and Movement
 void catchBall(){
+
 		while(ballFound == 1){
 		speedControl = 0.5;
 		motor[catchSpinner] = -127;
 		movement("forward",750);
 		checkBall();
 		}
-}`
+}
 
 //Check Ball
 void checkBall(){
@@ -232,14 +246,26 @@ void checkBall(){
 
 }
 
+void checkBallConstant(){
+	if (SensorValue(storageCheck) >= 2000){
+		motor[catchSpinner] = 0;
+		ballFound = 2;
+	}
+	else
+		{
+			ballFound = 0;
+	}
+
+}
+
 
 //Deposit Box Alignment and Detection
 void deliverBall(){
  int checkSouth = SensorValue(South) == 1 && SensorValue(East) == 1 && SensorValue(West) == 1;
  while(checkSouth == 0){
   checkSouth = SensorValue(South) == 1 && SensorValue(East) == 1 && SensorValue(West) == 1;
-  if(SensorValue(East) == 0) {rotation("anticlockwise");}
-  else if(SensorValue(West) == 0) {rotation("clockwise");}
+  if(SensorValue(East) == 0) {rotation("anticlockwise",100);}
+  else if(SensorValue(West) == 0) {rotation("clockwise",100);}
 
   if(checkSouth == 1) {
   movement("back",500);
@@ -266,9 +292,6 @@ if (SensorValue(backLimitLeft) == 1 || SensorValue(backLimitRight) == 1){
 			}
 		}
 }
-
-
-
 
 
 //Movement controls
@@ -312,3 +335,4 @@ if (SensorValue(backLimitLeft) == 1 || SensorValue(backLimitRight) == 1){
 // 	motor[leftMotor] = speedLeft;
 // 	motor[rightMotor] = speedRight;
 // }
+
